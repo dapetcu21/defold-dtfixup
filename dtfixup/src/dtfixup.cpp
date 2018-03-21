@@ -9,11 +9,9 @@
 
 #include <dmsdk/sdk.h>
 
-#ifdef DM_PLATFORM_OSX
+#ifdef DM_PLATFORM_WINDOWS
 
-#include <CoreServices/CoreServices.h>
-#include <mach/mach.h>
-#include <mach/mach_time.h>
+#include <Windows.h>
 #include <algorithm>
 #include <cmath>
 
@@ -56,12 +54,13 @@ static int dtfixup_init(lua_State *L) {
 }
 
 static double get_real_time() {
-    uint64_t t = mach_absolute_time();
-    static mach_timebase_info_data_t timebaseInfo;
-    if (timebaseInfo.denom == 0) {
-        mach_timebase_info(&timebaseInfo);
+    LARGE_INTEGER tm;
+    QueryPerformanceCounter(&tm);
+    static LARGE_INTEGER frequency;
+    if (frequency.QuadPart == 0) {
+        QueryPerformanceFrequency(&frequency);
     }
-    return (double)t * (timebaseInfo.numer / timebaseInfo.denom) * 0.000000001;
+    return (double)tm.QuadPart / (double)frequency.QuadPart;
 }
 
 static double average(const Sample samples[], int end) {
@@ -156,7 +155,7 @@ static void LuaInit(lua_State *L)
 }
 
 dmExtension::Result AppInitializeDtFixup(dmExtension::AppParams* params) {
-    #ifdef DM_PLATFORM_OSX
+    #ifdef DM_PLATFORM_WINDOWS
     appConfig = params->m_ConfigFile;
     #endif
     return dmExtension::RESULT_OK;
@@ -170,7 +169,9 @@ dmExtension::Result InitializeDtFixup(dmExtension::Params *params)
 
 dmExtension::Result FinalizeDtFixup(dmExtension::Params *params)
 {
+    #ifdef DM_PLATFORM_WINDOWS
     callback = LuaCallbackInfo();
+    #endif
     return dmExtension::RESULT_OK;
 }
 

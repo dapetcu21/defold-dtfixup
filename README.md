@@ -18,3 +18,5 @@ function update(self, dt)
   dtfixup.update(dt)
 end
 ```
+
+The callback passed to `dtfixup.init()` will be called as soon as a measurement is available (after 10 frames) and will be called again with refined values the next 50 frames.

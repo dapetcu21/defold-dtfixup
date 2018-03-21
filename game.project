@@ -1,0 +1,32 @@
+[project]
+title = Fixup for variable_dt bug
+
+[input]
+game_binding = /input/game.input_bindingc
+
+[display]
+width = 1024
+height = 768
+variable_dt = 1
+
+[physics]
+scale = 0.02
+
+[script]
+shared_state = 1
+
+[library]
+include_dirs = dtfixup
+
+[android]
+package = me.petcu.dtfixup
+
+[ios]
+bundle_identifier = me.petcu.dtfixup
+
+[osx]
+bundle_identifier = me.petcu.dtfixup
+
+[bootstrap]
+main_collection = /example/main.collectionc
+

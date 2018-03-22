@@ -1,8 +1,15 @@
 function init(self)
   self.time = 0
+  msg.post("#collectionproxy", "acquire_input_focus")
 end
 
 function update(self, dt)
   self.time = self.time + dt
   label.set_text("#label", self.time)
+end
+
+function on_input(self, action_id, action)
+  if action_id == hash("touch") and action.released then
+    self.time = 0
+  end
 end

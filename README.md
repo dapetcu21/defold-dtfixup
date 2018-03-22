@@ -22,3 +22,5 @@ end
 ```
 
 The callback passed to `dtfixup.init()` will be called as soon as a measurement is available (after 10 frames) and will be called again with refined values the next 50 frames.
+
+This extension reads `variable_dt` and doesn't attempt to correct the time step if it's disabled or if the platform is not Windows.

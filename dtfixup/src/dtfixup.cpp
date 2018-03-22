@@ -4,6 +4,7 @@
 #define SAMPLE_COUNT 60
 #define SKIP_COUNT 5
 #define MIN_SIGNIFICANT_SAMPLES 10
+#define EPSILON 0.01
 
 #define DLIB_LOG_DOMAIN LIB_NAME
 
@@ -112,7 +113,12 @@ static int dtfixup_update(lua_State *oL)
         }
         std::sort(samples, samples + currentSample, cmp_deviation);
 
-        lua_pushnumber(L, average(samples, currentSample - SKIP_COUNT));
+        double factor = average(samples, currentSample - SKIP_COUNT);
+        if (fabs(factor - 1.0) <= EPSILON) {
+            // If it's close enough to 1, the bug probably doesn't manifest
+            factor = 1.0;
+        }
+        lua_pushnumber(L, factor);
 
         int ret = lua_pcall(L, 1, 0, 0);
         if (ret != 0) {

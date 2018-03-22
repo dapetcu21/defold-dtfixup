@@ -9,6 +9,8 @@ to use with `set_time_step`.
 
 ## Usage
 
+Add https://github.com/dapetcu21/defold-dtfixup/archive/master.zip to your dependencies, then:
+
 ```lua
 dtfixup.init(function (factor)
   msg.post("#collectionproxy", "set_time_step", { factor = factor, mode = 0 })

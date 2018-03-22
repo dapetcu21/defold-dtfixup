@@ -23,12 +23,14 @@ struct LuaCallbackInfo {
 };
 
 struct Sample {
-    double real, dt, factor, deviation;
+    long long real;
+    double dt, factor, deviation;
 };
 
 static dmConfigFile::HConfig appConfig;
 static LuaCallbackInfo callback;
-static double realReference;
+static long long realReference;
+static long long realFrequency;
 static Sample samples[SAMPLE_COUNT];
 static int currentSample;
 
@@ -50,27 +52,21 @@ static int dtfixup_init(lua_State *L) {
 
     currentSample = -1;
 
+    static LARGE_INTEGER frequency;
+    QueryPerformanceFrequency(&frequency);
+    realFrequency = frequency.QuadPart;
+
     return 0;
 }
 
-static double get_real_time() {
-    LARGE_INTEGER tm;
-    QueryPerformanceCounter(&tm);
-    static LARGE_INTEGER frequency;
-    if (frequency.QuadPart == 0) {
-        QueryPerformanceFrequency(&frequency);
-    }
-    return (double)tm.QuadPart / (double)frequency.QuadPart;
-}
-
 static double average(const Sample samples[], int end) {
-    double real = 0.0;
+    long long real = 0;
     double dt = 0.0;
     for (int i = 0; i < end; i++) {
         real += samples[i].real;
         dt += samples[i].dt;
     }
-    return real / dt;
+    return (double) real / (double)realFrequency / dt;
 }
 
 static bool cmp_deviation(const Sample &a, const Sample &b) {
@@ -84,7 +80,10 @@ static int dtfixup_update(lua_State *oL)
     }
 
     double dt = luaL_checknumber(oL, 1);
-    double realTime = get_real_time();
+
+    LARGE_INTEGER realTimeLI;
+    QueryPerformanceCounter(&realTimeLI);
+    long long realTime = realTimeLI.QuadPart;
 
     if (currentSample == -1) {
         realReference = realTime;
@@ -95,7 +94,7 @@ static int dtfixup_update(lua_State *oL)
     Sample &sample = samples[currentSample];
     sample.real = realTime - realReference;
     sample.dt = dt;
-    sample.factor = sample.real / sample.dt;
+    sample.factor = (double)sample.real / (double)realFrequency / sample.dt;
     realReference = realTime;
 
     if (currentSample >= MIN_SIGNIFICANT_SAMPLES) {
